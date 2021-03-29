@@ -1,7 +1,45 @@
 version: "3.8"
 services:
+  traefik:
+    image: traefik:v2.4
+    restart: "always"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+
+    volumes:
+      - "./traefik/traefik.yaml:/etc/traefik/traefik.yml"
+      - "./traefik/traefik-provider.yaml:/etc/traefik.d/traefik-provider.yml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+
   cogs:
-      image: $GOGS_IMAGE
+    image: $GOGS_IMAGE
+    volumes:
+      - ./data/gogs:/data
+    ports:
+      - "3001:3000"
+      - "2222:22"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gogs.rule=Host(`gogs.localhost`)"
+      - "traefik.http.routers.gogs.entrypoints=web"
+      - "traefik.http.routers.gogs.loadbalancer.server.port=3000"
+      # - "traefik.http.routers.gogs.rule=PathPrefix(`/gogs`)"
+      # - "traefik.http.routers.gogs.tls=true"
+      # - "traefik.http.routers.gogs.entrypoints=websecure"
+      # - "traefik.http.services.gogs.loadbalancer.server.port=3000"
+      # - "traefik.http.routers.gogs-http.middlewares=https-redirect@file"
+      # - "traefik.http.routers.gogs-http.rule=PathPrefix(`/gogs`)"
+      # - "traefik.http.routers.gogs-http.entrypoints=web"
 
     
     

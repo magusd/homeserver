@@ -1,0 +1,12 @@
+
+http:
+  middlewares:
+    https-redirect:
+      redirectRegex:
+        regex: "^http://(.*)"
+        replacement: "https://${1}"
+
+    remove-powered-by:
+      headers:
+        customResponseHeaders:
+          X-Powered-By: "" # Removes
